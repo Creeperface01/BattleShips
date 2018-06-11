@@ -1,0 +1,7 @@
+.gitignore
+.idea/workspace.xml
+target/
+/.idea/
+/battleships.iml
+/bednar.zip
+/src/META-INF/
