@@ -23,7 +23,10 @@ import spse.creeperface.battleships.game.statistics.GameStatistic;
 import spse.creeperface.battleships.game.statistics.Stat;
 import spse.creeperface.battleships.util.Utils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author CreeperFace
@@ -93,7 +96,6 @@ public final class Game {
     void initController(GameController controller) {
         Preconditions.checkState(this.controller == null, "GameController already instantiated");
         this.controller = controller;
-        this.controller.initListeners();
     }
 
     public void start() {
@@ -108,8 +110,6 @@ public final class Game {
         Pane pane = GameSceneBuilder.createGameScene(this);
 
         Utils.switchScene(main.getPrimaryStage(), pane);
-
-        controller.onAreaChanged(true);
 
         GridPane area = controller.getArea().getPane();
         GridPane opponentArea = controller.getOpponentArea().getPane();
@@ -127,6 +127,8 @@ public final class Game {
         controller.getHits().setText("0");
         controller.getTotal().setText("0");
         controller.getShipsLeft().setText("" + this.options.getShipCount());
+
+        Platform.runLater(() -> this.controller.initListeners());
 
         opponentArea.setVisible(false);
 
@@ -341,7 +343,9 @@ public final class Game {
     }
 
     void setTile(Vector2i vec, Tile tile, Tile[] tiles) {
-        Preconditions.checkArgument(!(vec.getX() > getOptions().getLengthX() || vec.getY() > getOptions().getLengthY() || vec.getX() < 0 || vec.getY() < 0), "Coordinates out of playable area");
+        if (vec.getX() > getOptions().getLengthX() || vec.getY() > getOptions().getLengthY() || vec.getX() < 0 || vec.getY() < 0) {
+            return;
+        }
 
         tiles[positionHash(vec)] = tile;
     }
@@ -353,7 +357,7 @@ public final class Game {
     private void placeBotShips() {
         int count = getOptions().getShipCount();
 
-        List<Vector2i> availablePositions = new LinkedList<>();
+        List<Vector2i> availablePositions = new ArrayList<>(getOptions().getLengthX() * getOptions().getLengthY());
 
         for (int x = 0; x < getOptions().getLengthX(); x++) {
             for (int y = 0; y < getOptions().getLengthY(); y++) {
@@ -372,9 +376,11 @@ public final class Game {
         Vector2i pos = available.get(new Random().nextInt(available.size()));
 
         for (Vector2i side : Utils.getNeighbours(pos)) {
-            for (Vector2i vec : new ArrayList<>(available)) {
+            for (int i = 0; i < available.size(); i++) {
+                Vector2i vec = available.get(i);
+
                 if (vec.equals(side)) {
-                    available.remove(vec);
+                    available.remove(i);
                 }
             }
         }

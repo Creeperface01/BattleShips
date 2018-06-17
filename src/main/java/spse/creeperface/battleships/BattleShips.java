@@ -105,11 +105,14 @@ public class BattleShips extends Application {
         TimelineBuilder.create().keyFrames(
                 new KeyFrame(Duration.millis(2000), e -> imageView.setImage(new Image(getClass().getClassLoader().getResourceAsStream("spse.png")))),
                 new KeyFrame(Duration.millis(4000), e -> {
-                    SceneBuilder.get(SceneBuilder.SceneType.MAIN, 600, 600).ifPresent((scene) -> this.mainScene = scene);
+                    SceneBuilder.get(SceneBuilder.SceneType.MAIN, 600, 600).ifPresent((scene) -> {
+                        this.mainScene = scene;
+                        primaryStage.setScene(this.mainScene);
 
-                    primaryStage.setScene(this.mainScene);
+                        Platform.runLater(this::loadSettings);
+                    });
 
-                    Platform.runLater(this::loadSettings);
+
                 })
         ).build().play();
     }
@@ -154,12 +157,13 @@ public class BattleShips extends Application {
         } else {
             try {
                 this.settings = new Gson().fromJson(new InputStreamReader(new FileInputStream(file)), Settings.class);
-                this.controller.getName().setText(this.settings.getName());
 
                 new Thread(this.saveTask).start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
+        settings.initProperties(controller.getName().textProperty());
     }
 }

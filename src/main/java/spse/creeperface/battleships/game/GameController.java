@@ -1,6 +1,7 @@
 package spse.creeperface.battleships.game;
 
 import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.vector.Vector2d;
 import com.flowpowered.math.vector.Vector2i;
 import com.google.common.base.Preconditions;
 import javafx.animation.Animation;
@@ -8,7 +9,6 @@ import javafx.animation.Transition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -109,10 +109,9 @@ class GameController {
     }
 
     private void onMouseMoved(MouseEvent e) {
-        this.cursorPosition = new Vector2i(e.getX(), e.getY());
-
         Vector2i tilePos = currentTilePos;
-        currentTilePos = getTilePos(this.cursorPosition);
+
+        updateCursorPosition(e.getX(), e.getY());
 
         if (!Objects.equals(tilePos, this.currentTilePos)) {
             fades.setImage(GameSceneBuilder.onSelectedTileChanged(this.game, this.gamePane));
@@ -178,6 +177,7 @@ class GameController {
         if (processingLayout) {
             return;
         }
+
         double delta = e.getDeltaY();
 
         double scale = area.getPane().getScaleX();
@@ -195,10 +195,11 @@ class GameController {
         opponentArea.getPane().setScaleX(scale);
         opponentArea.getPane().setScaleY(scale);
 
-        onAreaChanged();
-        if (this.currentTilePos != null) {
-            this.fades.setImage(GameSceneBuilder.onSelectedTileChanged(this.game, this.gamePane));
-        }
+        onAreaChanged(true);
+
+        updateCursorPosition();
+
+        this.fades.setImage(GameSceneBuilder.onSelectedTileChanged(this.game, this.gamePane));
     }
 
     void onShipDragDetected(ListCell<Image> cell, MouseEvent e) {
@@ -348,11 +349,11 @@ class GameController {
         a1.play();
     }
 
-    Vector2i getTilePos(Vector2i pos) {
+    private Vector2i getTilePos(Vector2i pos) {
         return getTilePosFromCoords(pos.getX(), pos.getY());
     }
 
-    Vector2i getTilePosFromCoords(double x, double y) {
+    private Vector2i getTilePosFromCoords(double x, double y) {
         if (!this.areaBounds.contains(x, y)) {
             return null;
         }
@@ -364,16 +365,11 @@ class GameController {
     }
 
     BoundingBox getTileBounds(Vector2i pos) {
-        Bounds bb = gamePane.getBoundsInLocal();
+        double minX = ((pos.getX() * areaBounds.getWidth()) + (game.getOptions().getLengthX() * areaBounds.getMinX())) / game.getOptions().getLengthX();
+        double maxX = (((pos.getX() + 1) * areaBounds.getWidth()) + (game.getOptions().getLengthX() * areaBounds.getMinX())) / game.getOptions().getLengthX();
 
-        double offsetX = areaBounds.getMinX() - bb.getMinX();
-        double offsetY = areaBounds.getMinY() - bb.getMinY();
-
-        double minX = offsetX + pos.getX() * (areaBounds.getWidth() / game.getOptions().getLengthX());
-        double maxX = offsetX + (pos.getX() + 1) * (areaBounds.getWidth() / game.getOptions().getLengthX());
-
-        double minY = offsetY + pos.getY() * (areaBounds.getHeight() / game.getOptions().getLengthY());
-        double maxY = offsetY + (pos.getY() + 1) * (areaBounds.getHeight() / game.getOptions().getLengthY());
+        double minY = ((pos.getY() * areaBounds.getHeight()) + (game.getOptions().getLengthY() * areaBounds.getMinY())) / game.getOptions().getLengthY();
+        double maxY = (((pos.getY() + 1) * areaBounds.getHeight()) + (game.getOptions().getLengthY() * areaBounds.getMinY())) / game.getOptions().getLengthY();
 
         return new BoundingBox(minX, minY, maxX - minX, maxY - minY);
     }
@@ -434,8 +430,10 @@ class GameController {
     void turnMap(Node toHide, Node toShow, Runnable onComplete) {
         processingLayout = true;
         toShow.setVisible(false);
-        borders.setVisible(false);
         fades.setVisible(false);
+
+        borders.setImage(GameSceneBuilder.drawBorders(game, gamePane, area.getPane()));
+
         double currentScale = toHide.getScaleY();
 
         Transition hide = new Transition() {
@@ -479,11 +477,24 @@ class GameController {
                 onComplete.run();
             }
 
-            borders.setVisible(true);
             fades.setVisible(true);
+
+            borders.setImage(GameSceneBuilder.drawBorders(game, gamePane, area.getPane()));
         });
 
         hide.play();
+    }
+
+    private void updateCursorPosition() {
+        Vector2d pos = Utils.mouseCoords(gamePane);
+
+        updateCursorPosition(pos.getX(), pos.getY());
+    }
+
+    private void updateCursorPosition(double x, double y) {
+        this.cursorPosition = new Vector2i(x, y);
+
+        currentTilePos = getTilePos(this.cursorPosition);
     }
 
     void showEndStage() {

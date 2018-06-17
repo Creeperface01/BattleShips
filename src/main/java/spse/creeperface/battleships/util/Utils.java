@@ -1,6 +1,7 @@
 package spse.creeperface.battleships.util;
 
 import com.flowpowered.math.GenericMath;
+import com.flowpowered.math.vector.Vector2d;
 import com.flowpowered.math.vector.Vector2i;
 import com.google.common.collect.Lists;
 import javafx.geometry.Bounds;
@@ -17,11 +18,13 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import lombok.experimental.UtilityClass;
 import spse.creeperface.battleships.fx.ResizableCanvas;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Random;
 import java.util.function.IntSupplier;
@@ -222,5 +225,23 @@ public class Utils {
         } catch (NumberFormatException ex) {
             e.consume();
         }
+    }
+
+    public Vector2d mouseCoords(Pane root) {
+        Scene scene = root.getScene();
+
+        Point pointerLocation = MouseInfo.getPointerInfo().getLocation();
+
+        double sceneX = pointerLocation.getX();
+        sceneX -= scene.getWindow().getX();
+        sceneX -= scene.getX();
+        sceneX -= root.getLayoutX();
+
+        double sceneY = pointerLocation.getY();
+        sceneY -= scene.getWindow().getY();
+        sceneY -= scene.getY();
+        sceneY -= root.getLayoutY();
+
+        return new Vector2d(sceneX, sceneY);
     }
 }

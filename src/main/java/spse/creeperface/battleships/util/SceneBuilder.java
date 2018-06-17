@@ -79,7 +79,7 @@ public class SceneBuilder {
         settingsBar.setPrefWidth(200);
         settingsBar.setTranslateX(-190);
 
-        TextField settingsName = new TextField(settings.getName());
+        TextField settingsName = new TextField();
         settingsName.addEventFilter(KeyEvent.KEY_TYPED, (e) -> controller.onNickNamePropertyChanged(e, settingsName));
 
         settingsName.focusedProperty().addListener((ob, oldVal, newVal) -> controller.onNickNamePropertyFocused(newVal, settingsName));
@@ -199,7 +199,7 @@ public class SceneBuilder {
         pane.add(new Label("Počet tahů: "), 0, 4);
         pane.add(rounds, 1, 4);
 
-        pane.add(new Label("Počet tref: "), 0, 5);
+        pane.add(new Label("Počet zásahů: "), 0, 5);
         pane.add(hits, 1, 5);
 
         pane.add(new Label("Počet minutí: "), 0, 6);
@@ -277,6 +277,7 @@ public class SceneBuilder {
         TextField name = new TextField("Hrac");
         name.addEventFilter(KeyEvent.KEY_TYPED, (e) -> controller.onNickNamePropertyChanged(e, name));
         name.focusedProperty().addListener((ob, oldVal, newVal) -> controller.onNickNamePropertyFocused(newVal, name));
+        name.textProperty().bindBidirectional(controller.getName().textProperty());
 
         ChoiceBox<ProviderType> providers = new ChoiceBox<>();
         providers.setConverter(new StringConverter<ProviderType>() {

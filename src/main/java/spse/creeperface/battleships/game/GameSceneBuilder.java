@@ -54,11 +54,10 @@ public class GameSceneBuilder {
 
         VBox shipBox = new VBox();
         shipBox.setAlignment(Pos.TOP_CENTER);
-        shipBox.setStyle("-fx-border-color: red; -fx-border-width: 1; -fx-background-color: white");
+        shipBox.setStyle("-fx-background-color: white");
 
         StackPane gamePane = new StackPane();
         gamePane.setAlignment(Pos.CENTER);
-        gamePane.setStyle("-fx-border-color: blue; -fx-border-width: 1");
 
         Image ship = images.get(ResourceType.SHIP);
 
@@ -206,25 +205,27 @@ public class GameSceneBuilder {
         double tileSizeX = imgWidth / game.getOptions().getLengthX();
         double tileSizeY = imgHeight / game.getOptions().getLengthY();
 
-        g.setColor(Color.GRAY);
-        for (int x = 0; x <= game.getOptions().getLengthX(); x++) {
-            double offsetX = (x * tileSizeX) + minX;
+        if (!game.getController().isProcessingLayout()) {
+            g.setColor(Color.GRAY);
+            for (int x = 0; x <= game.getOptions().getLengthX(); x++) {
+                double offsetX = (x * tileSizeX) + minX;
 
-            if (offsetX < 0 || offsetX > maxX) {
-                continue;
+                if (offsetX < 0 || offsetX > maxX) {
+                    continue;
+                }
+
+                g.drawLine((int) offsetX, (int) Math.min(imgHeight + minY, height - minY), (int) offsetX, (int) Math.max(minY, 0));
             }
 
-            g.drawLine((int) offsetX, (int) Math.min(imgHeight + minY, height - minY), (int) offsetX, (int) Math.max(minY, 0));
-        }
+            for (int y = 0; y <= game.getOptions().getLengthY(); y++) {
+                double offsetY = (y * tileSizeY) + minY;
 
-        for (int y = 0; y <= game.getOptions().getLengthY(); y++) {
-            double offsetY = (y * tileSizeY) + minY;
+                if (offsetY < 0 || offsetY > maxY) {
+                    continue;
+                }
 
-            if (offsetY < 0 || offsetY > maxY) {
-                continue;
+                g.drawLine((int) Math.max(0, minX), (int) offsetY, (int) Math.min(imgWidth + minX, width - minX), (int) offsetY);
             }
-
-            g.drawLine((int) Math.max(0, minX), (int) offsetY, (int) Math.min(imgWidth + minX, width - minX), (int) offsetY);
         }
 
         g.setColor(Color.GRAY);
@@ -338,10 +339,10 @@ public class GameSceneBuilder {
         Label misses = new Label("" + statistic.getStatistic(Stat.MISS));
         misses.setStyle("-fx-font-weight: bold");
 
-        statPane.add(new Label("Počet trefených střel: "), 0, 0);
+        statPane.add(new Label("Počet zásahů: "), 0, 0);
         statPane.add(hits, 1, 0);
 
-        statPane.add(new Label("Počet křivých střel: "), 0, 1);
+        statPane.add(new Label("Počet minutí: "), 0, 1);
         statPane.add(misses, 1, 1);
 
         Button closeBtn = new Button("Zavřít");

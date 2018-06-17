@@ -1,5 +1,6 @@
 package spse.creeperface.battleships;
 
+import com.google.common.base.Preconditions;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
@@ -35,6 +36,8 @@ public class Controller {
     private TextField name;
 
     public void init(TextField name) {
+        Preconditions.checkState(this.name == null, "Controller already initialized");
+
         this.name = name;
     }
 
@@ -96,10 +99,7 @@ public class Controller {
             Character c;
             if ((c = Utils.checkNickname(text)) != null) {
                 Utils.showTip(nameField, "Jméno nesmí obsahovat symbol '" + c + "'");
-                return;
             }
-
-            main.getSettings().setName(text);
         }
     }
 
@@ -156,8 +156,6 @@ public class Controller {
         }
 
         ((Stage) name.getScene().getWindow()).close();
-        main.getSettings().setName(text);
-        main.getSettings().setProvider(providerType.getValue());
 
         new Thread(main.getSaveTask()).start();
     }
